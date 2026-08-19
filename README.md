@@ -3,6 +3,12 @@
 > Biến DeepSeek Harness thành Geometry Dash — nhảy ô vàng trên chính dòng chat của bạn.
 > *Turn your chat into a Geometry Dash level — English & Tiếng Việt supported.*
 
+<div align="right">
+
+[English](README.en.md) | **Tiếng Việt**
+
+</div>
+
 [![npm version](https://img.shields.io/npm/v/dsh-gdash-parkour?color=ffd600)](https://www.npmjs.com/package/dsh-gdash-parkour)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![DSH Plugin](https://img.shields.io/badge/DSH-Plugin-blue)](https://github.com/deepseek-ai/deepseek-harness)
