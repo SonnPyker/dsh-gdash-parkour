@@ -1,0 +1,4 @@
+# dsh bundle patch: chèn plugin vào profile layer
+- insert:
+    - id: gdash-parkour
+      name: dsh-gdash-parkour

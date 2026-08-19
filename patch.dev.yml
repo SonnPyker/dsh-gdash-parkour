@@ -1,0 +1,5 @@
+# Dùng khi dev chưa publish lên npm — chạy DSH với patch này:
+#   dsh --patch ./gdash-parkour/patch.dev.yml
+- insert:
+    - id: gdash-parkour
+      name: file:./gdash-parkour
