@@ -1,6 +1,6 @@
 {
   "name": "dsh-gdash-parkour",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Geometry Dash Parkour for DSH — điều khiển ô vuông nhảy trên các dòng chat, collider từ UI, giãn dòng + kéo box + particles",
   "type": "module",
   "main": "lib/index.js",
@@ -15,12 +15,24 @@
       "patch": "./cordis.patch.yml"
     },
     "client": {
-      "inject": ["@deepseek-ai/dsh-client-connection", "@deepseek-ai/dsh-client-runtime", "@deepseek-ai/dsh-client-locale", "@deepseek-ai/dsh-client-ui-settings", "@deepseek-ai/dsh-client-ui-theme"],
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-theme"
+      ],
       "platform": "web"
     }
   },
   "license": "MIT",
-  "keywords": ["dsh", "cordis", "geometry-dash", "parkour", "plugin"],
+  "keywords": [
+    "dsh",
+    "cordis",
+    "geometry-dash",
+    "parkour",
+    "plugin"
+  ],
   "scripts": {
     "build": "echo \"no build step - lib/client.js is plain JS\"",
     "watch": "echo \"edit lib/client.js directly\""
@@ -36,5 +48,12 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "files": ["lib/", "client/", "src/", "cordis.patch.yml", "README.md", "LICENSE"]
+  "files": [
+    "lib/",
+    "client/",
+    "src/",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ]
 }

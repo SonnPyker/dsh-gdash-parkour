@@ -3,10 +3,8 @@ window.__ModuleLoader__.load({
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;
-    // React có thể đến từ require("react") hoặc global
     let React;
     try { React = require("react"); } catch (e) { React = globalThis.React || window.React; }
-    // Nếu không có React, tạo stub tối thiểu
     if (!React || !React.createElement) {
       try { React = require("@deepseek-ai/cordis"); } catch (e) {}
     }
@@ -42,7 +40,6 @@ window.__ModuleLoader__.load({
       function emit() { listeners.forEach(fn => fn(Object.assign({}, state))); saveState(state); }
       function subscribe(fn) { listeners.push(fn); return () => { listeners = listeners.filter(x => x !== fn); }; }
 
-      // Styles global cho particle + giãn dòng animation
       const globalStyle = document.createElement("style");
       globalStyle.id = "gdash-parkour-global";
       globalStyle.textContent = `
@@ -72,73 +69,118 @@ window.__ModuleLoader__.load({
       `;
       if (!document.getElementById("gdash-parkour-global")) document.head.appendChild(globalStyle);
 
-      // Settings UI
-      const slots = ctx.get("slots");
-      if (slots) {
-        slots.inject("settings.section", () => slots.register(
-          { name: "settings.section", id: "gdash-parkour", order: 20, label: "GDash Parkour" },
-          () => {
-            // React component cho settings
-            function SettingsPanel() {
-              const [s, setS] = React.useState(() => Object.assign({}, state));
-              React.useEffect(() => subscribe(setS), []);
-              const upd = (patch) => { Object.assign(state, patch); emit(); setS(Object.assign({}, state)); };
+      // Locale — vi + en
+      const NS = "gdash-parkour";
+      const dicts = {
+        en: {
+          title: "GDash Parkour",
+          subtitle: "Geometry Dash on your chat — v1.1.0",
+          enabledOn: "On",
+          enabledOff: "Off",
+          desc: "Control the yellow square jumping on your chat lines. Expand gaps to make platforms, drag red borders when stuck. No death — just pause.",
+          gap: "Chat gap",
+          gapHint: "Default 32px, collider shrunk for real gaps. Pulse + particles when expanding.",
+          showColliders: "Show red border (drag to move)",
+          particles: "Particles",
+          jumpTuning: "Jump tuning (snap)",
+          jumpForce: "Jump force",
+          gravity: "Gravity",
+          resetSnap: "Reset snap defaults",
+          tip: "Tip: Drag red border to move blocks, drag yellow square to escape. Box rotates 360° per jump."
+        },
+        vi: {
+          title: "GDash Parkour",
+          subtitle: "Geometry Dash trên dòng chat — v1.1.0",
+          enabledOn: "Bật",
+          enabledOff: "Tắt",
+          desc: "Điều khiển ô vàng nhảy trên chính các dòng chat. Kéo giãn dòng để tạo bậc thang, kéo viền đỏ để dời block khi kẹt. Không chết — chỉ pause.",
+          gap: "Giãn dòng chat",
+          gapHint: "Mặc định 32px, collider đã thu nhỏ để có khe hở. Có pulse + particle khi giãn.",
+          showColliders: "Hiện viền đỏ (kéo để dời)",
+          particles: "Particles",
+          jumpTuning: "Tinh chỉnh nhảy (snap)",
+          jumpForce: "Lực nhảy",
+          gravity: "Trọng lực",
+          resetSnap: "Reset snap defaults",
+          tip: "Mẹo: Kéo viền đỏ để dời block, kéo ô vàng để thoát kẹt. Box xoay đủ 360° mỗi cú nhảy."
+        }
+      };
+      const localeSvc = ctx.get("locale");
+      if (localeSvc) ctx.effect(() => localeSvc.register(NS, dicts), "gdash-parkour: locale");
+      const t = (() => {
+        try { return (localeSvc && localeSvc.bind(NS)) || ((k) => dicts.vi[k] || k); } catch (e) { return (k) => (dicts.vi[k] || dicts.en[k] || k); }
+      })();
 
-              return React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "16px", padding: "8px 0" } },
-                React.createElement("div", { style: { background: "var(--vscode-editor-background, #1e1e1e)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "12px" } },
-                  React.createElement("div", { style: { fontWeight: 700, marginBottom: "8px" } }, "⬜ GDash Parkour — Chat Platformer"),
-                  React.createElement("div", { style: { fontSize: "13px", opacity: 0.8, marginBottom: "10px" } }, "Biến mọi dòng chat và UI nổi thành sàn nhảy. Kéo giãn dòng để tạo bậc thang, kéo box để tránh kẹt."),
-                  React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginBottom: "8px" } },
-                    React.createElement("input", { type: "checkbox", checked: s.enabled, onChange: e => upd({ enabled: e.target.checked }), style: { accentColor: "#ffd600" } }),
-                    React.createElement("span", null, s.enabled ? "Đang bật — ô vàng có thể di chuyển" : "Đang tắt")
-                  ),
-                  React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" } },
-                    React.createElement("input", { type: "checkbox", checked: s.showColliders, onChange: e => upd({ showColliders: e.target.checked }), style: { accentColor: "#ffd600" } }),
-                    React.createElement("span", null, "Hiện khung collider (viền đỏ) — kéo để dời block")
-                  ),
-                  React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "6px" } },
-                    React.createElement("input", { type: "checkbox", checked: s.particles, onChange: e => upd({ particles: e.target.checked }), style: { accentColor: "#ffd600" } }),
-                    React.createElement("span", null, "Hiệu ứng particle khi giãn dòng / nhảy")
-                  )
+      // Settings UI — card trong Plugins → Plugin Configuration (settings.plugin.item)
+      ctx.inject(["settingsScope"], (scoped) => {
+        if (!scoped || !scoped.slots) return;
+        scoped.slots.inject("settings.plugin.item", () => scoped.slots.register({
+          name: "settings.plugin.item",
+          key: "gdash-parkour"
+        }, () => {
+          function SettingsCard() {
+            const [s, setS] = React.useState(() => Object.assign({}, state));
+            React.useEffect(() => subscribe(setS), []);
+            const upd = (patch) => { Object.assign(state, patch); emit(); setS(Object.assign({}, state)); };
+
+            return React.createElement("div", { style: { border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "14px", background: "rgba(255,255,255,0.03)", display: "flex", flexDirection: "column", gap: "12px" } },
+              React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } },
+                React.createElement("div", { style: { width: "36px", height: "36px", borderRadius: "8px", background: "#ffd600", border: "2px solid #111", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#111" } }, "⬜"),
+                React.createElement("div", { style: { flex: 1 } },
+                  React.createElement("div", { style: { fontWeight: 700 } }, t("title")),
+                  React.createElement("div", { style: { fontSize: "12px", opacity: 0.6 } }, t("subtitle"))
                 ),
-                React.createElement("div", { style: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "12px" } },
-                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginBottom: "6px" } },
-                    React.createElement("span", { style: { fontWeight: 600 } }, "Giãn dòng chat"),
-                    React.createElement("span", { style: { color: "#ffd600", fontWeight: 700 } }, s.gap + "px")
-                  ),
-                  React.createElement("input", { type: "range", min: 0, max: 80, value: s.gap, onChange: e => upd({ gap: parseInt(e.target.value, 10) }), style: { width: "100%", accentColor: "#ffd600" } }),
-                  React.createElement("div", { style: { fontSize: "11px", opacity: 0.6, marginTop: "4px" } }, "Mặc định 32px — cao hơn trước, collider đã thu nhỏ 4px để có khe hở giữa các dòng. Kéo để xem particle burst."),
-                  React.createElement("div", { style: { display: "flex", gap: "8px", marginTop: "10px" } },
-                    React.createElement("button", { onClick: () => upd({ gap: 0 }), style: { flex: 1, padding: "6px", borderRadius: "6px", border: "1px solid #444", background: "#2a2a2a", color: "#fff", cursor: "pointer" } }, "0px"),
-                    React.createElement("button", { onClick: () => upd({ gap: 32 }), style: { flex: 1, padding: "6px", borderRadius: "6px", border: "none", background: "#ffd600", color: "#111", fontWeight: 700, cursor: "pointer" } }, "32px"),
-                    React.createElement("button", { onClick: () => upd({ gap: 56 }), style: { flex: 1, padding: "6px", borderRadius: "6px", border: "1px solid #444", background: "#2a2a2a", color: "#fff", cursor: "pointer" } }, "56px")
-                  )
+                React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", background: s.enabled ? "#ffd600" : "#2a2a2a", color: s.enabled ? "#111" : "#fff", padding: "6px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 700 } },
+                  React.createElement("input", { type: "checkbox", checked: s.enabled, onChange: e => upd({ enabled: e.target.checked }), style: { accentColor: "#ffd600" } }),
+                  s.enabled ? t("enabledOn") : t("enabledOff")
+                )
+              ),
+              React.createElement("div", { style: { fontSize: "12px", opacity: 0.7, lineHeight: 1.5 } }, t("desc")),
+              React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "8px", background: "rgba(0,0,0,0.2)", padding: "10px", borderRadius: "8px" } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "12px" } },
+                  React.createElement("span", { style: { fontWeight: 600 } }, t("gap")),
+                  React.createElement("span", { style: { color: "#ffd600", fontWeight: 700 } }, s.gap + "px")
                 ),
-                React.createElement("div", { style: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "12px" } },
-                  React.createElement("div", { style: { fontWeight: 600, marginBottom: "8px" } }, "Tinh chỉnh nhảy (snap chính xác hơn)"),
-                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "12px", opacity: 0.8 } },
-                    React.createElement("span", null, "Lực nhảy (thấp hơn = dễ đáp)"),
+                React.createElement("input", { type: "range", min: 0, max: 80, value: s.gap, onChange: e => upd({ gap: parseInt(e.target.value, 10) }), style: { width: "100%", accentColor: "#ffd600" } }),
+                React.createElement("div", { style: { display: "flex", gap: "6px" } },
+                  React.createElement("button", { onClick: () => upd({ gap: 0 }), style: { flex: 1, padding: "5px", borderRadius: "6px", border: "1px solid #444", background: "#1f1f1f", color: "#fff", cursor: "pointer", fontSize: "12px" } }, "0px"),
+                  React.createElement("button", { onClick: () => upd({ gap: 32 }), style: { flex: 1, padding: "5px", borderRadius: "6px", border: "none", background: "#ffd600", color: "#111", fontWeight: 700, cursor: "pointer", fontSize: "12px" } }, "32px"),
+                  React.createElement("button", { onClick: () => upd({ gap: 56 }), style: { flex: 1, padding: "5px", borderRadius: "6px", border: "1px solid #444", background: "#1f1f1f", color: "#fff", cursor: "pointer", fontSize: "12px" } }, "56px")
+                ),
+                React.createElement("div", { style: { fontSize: "11px", opacity: 0.5 } }, t("gapHint"))
+              ),
+              React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" } },
+                React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px" } },
+                  React.createElement("input", { type: "checkbox", checked: s.showColliders, onChange: e => upd({ showColliders: e.target.checked }), style: { accentColor: "#ffd600" } }),
+                  t("showColliders")
+                ),
+                React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px" } },
+                  React.createElement("input", { type: "checkbox", checked: s.particles, onChange: e => upd({ particles: e.target.checked }), style: { accentColor: "#ffd600" } }),
+                  t("particles")
+                )
+              ),
+              React.createElement("details", { style: { background: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "8px" } },
+                React.createElement("summary", { style: { cursor: "pointer", fontSize: "12px", fontWeight: 600 } }, t("jumpTuning")),
+                React.createElement("div", { style: { marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" } },
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "11px" } },
+                    React.createElement("span", null, t("jumpForce")),
                     React.createElement("span", { style: { color: "#ffd600" } }, s.jump)
                   ),
                   React.createElement("input", { type: "range", min: -14, max: -7, step: 0.2, value: s.jump, onChange: e => upd({ jump: parseFloat(e.target.value) }), style: { width: "100%", accentColor: "#ffd600" } }),
-                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "12px", opacity: 0.8, marginTop: "8px" } },
-                    React.createElement("span", null, "Trọng lực"),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "11px" } },
+                    React.createElement("span", null, t("gravity")),
                     React.createElement("span", { style: { color: "#ffd600" } }, s.gravity)
                   ),
                   React.createElement("input", { type: "range", min: 0.5, max: 1.2, step: 0.02, value: s.gravity, onChange: e => upd({ gravity: parseFloat(e.target.value) }), style: { width: "100%", accentColor: "#ffd600" } }),
-                  React.createElement("div", { style: { fontSize: "11px", opacity: 0.6, marginTop: "6px" } }, "Mặc định thấp hơn trước (jump -10, gravity 0.82) và snap mặt dưới chính xác — đáp đất sẽ dính ngay mép trên collider, không bị hụt."),
-                  React.createElement("button", { onClick: () => upd({ jump: -10.0, gravity: 0.82 }), style: { marginTop: "8px", padding: "6px 10px", borderRadius: "6px", border: "1px solid #444", background: "#2a2a2a", color: "#fff", cursor: "pointer" } }, "Reset về mặc định snap")
-                ),
-                React.createElement("div", { style: { fontSize: "12px", opacity: 0.7, background: "rgba(255,214,0,0.08)", padding: "8px", borderRadius: "8px", border: "1px solid rgba(255,214,0,0.2)" } },
-                  React.createElement("b", null, "Mẹo: "),
-                  "Kéo viền đỏ để dời block chat, kéo ô vàng để thoát kẹt. Nhảy thấp hơn giúp đáp chính xác giữa các dòng đã giãn."
+                  React.createElement("button", { onClick: () => upd({ jump: -10.0, gravity: 0.82 }), style: { padding: "6px", borderRadius: "6px", border: "1px solid #444", background: "#2a2a2a", color: "#fff", cursor: "pointer", fontSize: "12px" } }, t("resetSnap"))
                 )
-              );
-            }
-            return React.createElement(SettingsPanel, null);
+              ),
+              React.createElement("div", { style: { fontSize: "11px", opacity: 0.6, background: "rgba(255,214,0,0.08)", padding: "6px 8px", borderRadius: "6px", border: "1px solid rgba(255,214,0,0.2)" } }, t("tip"))
+            );
           }
-        ));
-      }
+          return React.createElement(SettingsCard, null);
+        }));
+      });
 
       // Game overlay
       let overlay = null, world = null, colliderLayer = null, particleLayer = null, playerEl = null, hud = null;
@@ -150,7 +192,7 @@ window.__ModuleLoader__.load({
       let draggedEl = null, dragStart = { x: 0, y: 0 }, dragOrig = { x: 0, y: 0 }, isDragging = false;
       let playerDragging = false, playerDragOff = { x: 0, y: 0 };
 
-      const player = { x: 320, y: 120, vx: 0, vy: 0, w: 22, h: 22, onGround: false, rot: 0, coyote: 0, jumpBuffer: 0 };
+      const player = { x: 320, y: 120, vx: 0, vy: 0, w: 22, h: 22, onGround: false, rot: 0, coyote: 0, jumpBuffer: 0, jumpStartRot: 0 };
       const keys = {};
 
       function isTyping() {
@@ -166,8 +208,27 @@ window.__ModuleLoader__.load({
         if (el.closest('nav, aside, [role="navigation"], [class*="sidebar"], [class*="Sidebar"], [id*="sidebar"], [class*="workspace"]')) return true;
         return false;
       }
+      function isBackgroundExcluded(el, rect, cs) {
+        // loại bỏ box chat nền, header, container lớn
+        const tag = el.tagName;
+        if (tag === "HEADER" || tag === "FOOTER" || tag === "NAV") return true;
+        const cls = (el.className && typeof el.className === "string") ? el.className.toLowerCase() : "";
+        const bgKeywords = ["header", "footer", "top-bar", "title-bar", "composer", "chat-container", "conversation-container", "chat-header", "space-header", "background", "wrapper", "container"];
+        // nếu là container lớn có keyword và kích thước lớn -> loại
+        for (const kw of bgKeywords) {
+          if (cls.includes(kw) && (rect.height > 60 || rect.width > 450)) return true;
+        }
+        // scroll container lớn (box chat)
+        if ((cs.overflowY === "auto" || cs.overflowY === "scroll" || cs.overflow === "auto") && rect.height > 280 && el.children.length > 3) return true;
+        // box nền lớn bao toàn bộ chat
+        if (rect.width > window.innerWidth * 0.85 && rect.height > 220 && el.children.length > 5) return true;
+        // header space cụ thể: cao < 120 nhưng rộng gần full và nằm trên cùng
+        if (rect.top < 80 && rect.height < 120 && rect.width > window.innerWidth * 0.6) return true;
+        return false;
+      }
       function isChatOrFloating(el, rect, cs) {
         if (isInLeftTab(el, rect)) return false;
+        if (isBackgroundExcluded(el, rect, cs)) return false;
         if (rect.left < LEFT_CUTOFF) return false;
         const vw = window.innerWidth;
         const pos = cs.position;
@@ -201,8 +262,7 @@ window.__ModuleLoader__.load({
           p.style.setProperty("--dy", dy + "px");
           p.style.animationDelay = (Math.random() * 0.08) + "s";
           particleLayer.appendChild(p);
-          const d = ctx.timeout(() => { try { p.remove(); } catch (e) {} }, 700);
-          // cleanup via effect not needed, timeout disposer auto
+          ctx.timeout(() => { try { p.remove(); } catch (e) {} }, 700);
         }
       }
 
@@ -220,8 +280,10 @@ window.__ModuleLoader__.load({
           if (r.right < LEFT_CUTOFF || r.left > vw || r.bottom < 0 || r.top > vh) continue;
           if (r.width > vw * 0.96 && r.height > vh * 0.85) continue;
           if (!isChatOrFloating(el, r, cs)) continue;
-          // INSET collider để có khe hở giữa các dòng (fix "collider hơi to")
-          const insetX = 2, insetY = 4;
+          // thu nhỏ collider text để có space nhảy — 6px ngang, 8px dọc (trước 2/4)
+          const isFloating = cs.position === "fixed" || cs.position === "absolute";
+          const insetX = isFloating ? 2 : 6;
+          const insetY = isFloating ? 4 : 8;
           colliders.push({
             left: r.left + insetX,
             top: r.top + insetY,
@@ -249,7 +311,6 @@ window.__ModuleLoader__.load({
         for (const c of colliders) {
           if (c.el === null) continue;
           const d = document.createElement("div");
-          // viền đỏ nhưng inset nên nhìn nhỏ hơn block thực 1 chút
           d.style.cssText = "position:absolute;left:" + c.left + "px;top:" + c.top + "px;width:" + (c.right - c.left) + "px;height:" + (c.bottom - c.top) + "px;border:1px solid rgba(255,60,60,0.9);background:rgba(255,60,60,0.07);border-radius:4px;pointer-events:auto;box-sizing:border-box;cursor:grab;";
           d.title = "Kéo để dời block này";
           d.addEventListener("mousedown", (e) => startDrag(e, c.el));
@@ -260,16 +321,32 @@ window.__ModuleLoader__.load({
         }
       }
 
+      function clearGap() {
+        const gapStyle = document.getElementById("gdash-gap-style");
+        if (gapStyle) gapStyle.textContent = "";
+        originalMargins.forEach((v, el) => { try { el.style.marginBottom = v; el.classList.remove("gdash-gap-anim"); } catch (e) {} });
+        // không xóa map để lần sau vẫn restore đúng gốc
+      }
+
       function applyGap(newGap) {
+        if (!state.enabled) { clearGap(); return; }
         state.gap = newGap;
         const gapStyle = document.getElementById("gdash-gap-style");
         if (gapStyle) gapStyle.textContent = ":root{--gdash-gap:" + newGap + "px} [data-message-id]{margin-bottom:var(--gdash-gap) !important} .message{margin-bottom:var(--gdash-gap) !important}";
+        if (newGap === 0) {
+          clearGap();
+          if (pendingGapCollect) pendingGapCollect();
+          pendingGapCollect = ctx.timeout(() => { pendingGapCollect = null; collectColliders(); }, 80);
+          emit();
+          return;
+        }
         const all = document.body.querySelectorAll("div, article, section, li");
         let animatedCount = 0;
         all.forEach(el => {
           if (el.closest("#gdash-overlay")) return;
           const r = el.getBoundingClientRect();
           if (r.left < LEFT_CUTOFF) return;
+          if (isBackgroundExcluded(el, r, getComputedStyle(el))) return;
           const t = (el.innerText || "").trim();
           if (t.length < 8 || t.length > 4000) return;
           if (el.children.length > 6) return;
@@ -277,18 +354,15 @@ window.__ModuleLoader__.load({
           if (r.height < 20 || r.height > 360) return;
           const cs = getComputedStyle(el); if (cs.display === "none" || cs.visibility === "hidden") return;
           if (!originalMargins.has(el)) originalMargins.set(el, el.style.marginBottom);
-          if (newGap === 0) el.style.marginBottom = originalMargins.get(el) || "";
-          else el.style.marginBottom = newGap + "px";
-          // animation class
+          el.style.marginBottom = newGap + "px";
           el.classList.add("gdash-gap-anim");
-          // particle burst tại mép dưới mỗi dòng khi giãn
           if (state.particles && newGap > 12 && animatedCount < 12) {
             const rr = el.getBoundingClientRect();
             spawnParticles(rr.left + rr.width * 0.5, rr.bottom - 2, 4, "#ffd600");
             spawnParticles(rr.left + 12, rr.bottom - 2, 2, "#ff8c00");
           }
           animatedCount++;
-          const rm = ctx.timeout(() => el.classList.remove("gdash-gap-anim"), 500);
+          ctx.timeout(() => el.classList.remove("gdash-gap-anim"), 500);
         });
         if (pendingGapCollect) pendingGapCollect();
         pendingGapCollect = ctx.timeout(() => { pendingGapCollect = null; collectColliders(); }, 80);
@@ -317,7 +391,7 @@ window.__ModuleLoader__.load({
         world.appendChild(playerEl);
         hud = document.createElement("div");
         hud.style.cssText = "position:absolute;top:12px;right:12px;pointer-events:auto;background:rgba(17,17,17,0.92);color:#fff;padding:10px 12px;border-radius:10px;min-width:300px;box-shadow:0 8px 24px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);font-size:13px;line-height:1.4;backdrop-filter:blur(8px)";
-        hud.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-weight:700;letter-spacing:0.3px">⬜ GDash Parkour <span style="font-weight:400;opacity:0.6;font-size:11px">snap</span></div><button id="gdash-close" style="background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px">✕</button></div><div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap"><button id="gdash-pause" style="flex:1;background:#ffd600;color:#111;border:none;border-radius:6px;padding:6px 8px;font-weight:700;cursor:pointer">⏸ Pause (P)</button><button id="gdash-reset" style="flex:1;background:#333;color:#fff;border:1px solid #555;border-radius:6px;padding:6px 8px;font-weight:600;cursor:pointer">↺ Reset</button><button id="gdash-recollect" style="background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:6px;padding:6px 8px;cursor:pointer" title="Quét lại collider">⟳</button></div><div style="margin-bottom:8px"><label style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Giãn dòng chat</span><span id="gdash-gap-val" style="font-weight:700;color:#ffd600">' + state.gap + 'px</span></label><input id="gdash-gap" type="range" min="0" max="80" value="' + state.gap + '" style="width:100%;accent-color:#ffd600;cursor:pointer"><div style="font-size:11px;opacity:0.7;margin-top:2px">Kéo để tách dòng — có pulse + particle</div></div><label style="display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:pointer"><input id="gdash-show" type="checkbox" ' + (state.showColliders ? 'checked' : '') + ' style="accent-color:#ffd600"> Hiện khung collider (kéo để dời)</label><div style="font-size:11px;opacity:0.85;background:rgba(255,255,255,0.07);padding:6px 8px;border-radius:6px"><b>Kéo:</b> viền đỏ để dời block, ô vàng để thoát kẹt.<br><b>Nhảy:</b> <span style="color:#ffd600">Space/W/↑</span> thấp hơn, snap chính xác mặt dưới.<br><b>Di chuyển:</b> <span style="color:#ffd600">A/D ←→</span> <span style="color:#ffd600">Shift</span> chạy nhanh <span style="color:#ffd600">P</span> pause</div><div id="gdash-stats" style="margin-top:6px;font-size:11px;opacity:0.7;text-align:right">colliders: 0</div>';
+        hud.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-weight:700;letter-spacing:0.3px">⬜ GDash Parkour <span style="font-weight:400;opacity:0.6;font-size:11px">snap 360°</span></div><button id="gdash-close" style="background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px">✕</button></div><div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap"><button id="gdash-pause" style="flex:1;background:#ffd600;color:#111;border:none;border-radius:6px;padding:6px 8px;font-weight:700;cursor:pointer">⏸ Pause (P)</button><button id="gdash-reset" style="flex:1;background:#333;color:#fff;border:1px solid #555;border-radius:6px;padding:6px 8px;font-weight:600;cursor:pointer">↺ Reset</button><button id="gdash-recollect" style="background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:6px;padding:6px 8px;cursor:pointer" title="Quét lại collider">⟳</button></div><div style="margin-bottom:8px"><label style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Giãn dòng chat</span><span id="gdash-gap-val" style="font-weight:700;color:#ffd600">' + state.gap + 'px</span></label><input id="gdash-gap" type="range" min="0" max="80" value="' + state.gap + '" style="width:100%;accent-color:#ffd600;cursor:pointer"><div style="font-size:11px;opacity:0.7;margin-top:2px">Kéo để tách dòng — có pulse + particle</div></div><label style="display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:pointer"><input id="gdash-show" type="checkbox" ' + (state.showColliders ? 'checked' : '') + ' style="accent-color:#ffd600"> Hiện khung collider (kéo để dời)</label><div style="font-size:11px;opacity:0.85;background:rgba(255,255,255,0.07);padding:6px 8px;border-radius:6px"><b>Kéo:</b> viền đỏ để dời block, ô vàng để thoát kẹt.<br><b>Nhảy:</b> <span style="color:#ffd600">Space/W/↑</span> thấp, xoay đủ 360°.<br><b>Di chuyển:</b> <span style="color:#ffd600">A/D ←→</span> <span style="color:#ffd600">Shift</span> chạy nhanh <span style="color:#ffd600">P</span> pause</div><div id="gdash-stats" style="margin-top:6px;font-size:11px;opacity:0.7;text-align:right">colliders: 0</div>';
         overlay.appendChild(hud);
         const gapInput = hud.querySelector("#gdash-gap");
         const gapVal = hud.querySelector("#gdash-gap-val");
@@ -333,7 +407,6 @@ window.__ModuleLoader__.load({
         recollectBtn.addEventListener("click", collectColliders);
         closeBtn.addEventListener("click", () => { state.enabled = false; emit(); destroyOverlay(); });
 
-        // player drag
         playerEl.addEventListener("mousedown", (e) => {
           e.preventDefault(); e.stopPropagation();
           playerDragging = true; playerEl.style.cursor = "grabbing";
@@ -341,7 +414,6 @@ window.__ModuleLoader__.load({
           document.addEventListener("mousemove", onPlayerDrag);
           document.addEventListener("mouseup", endPlayerDrag);
         });
-        // gap style
         let gapStyle = document.getElementById("gdash-gap-style");
         if (!gapStyle) { gapStyle = document.createElement("style"); gapStyle.id = "gdash-gap-style"; document.head.appendChild(gapStyle); }
         applyGap(state.gap);
@@ -355,8 +427,7 @@ window.__ModuleLoader__.load({
         if (overlay) try { overlay.remove(); } catch (e) {}
         overlay = world = colliderLayer = particleLayer = playerEl = hud = null;
         colliderDivs = []; colliders = [];
-        // restore margins/transforms
-        originalMargins.forEach((v, el) => { try { el.style.marginBottom = v; el.classList.remove("gdash-gap-anim"); } catch (e) {} });
+        clearGap();
         originalTransforms.forEach((v, el) => { try { el.style.transform = v; } catch (e) {} });
       }
 
@@ -412,7 +483,6 @@ window.__ModuleLoader__.load({
 
       function updatePhysics() {
         if (paused || playerDragging || isDragging) return;
-        // jump buffer & coyote
         if (player.jumpBuffer > 0) player.jumpBuffer--;
         if (player.onGround) player.coyote = 6; else if (player.coyote > 0) player.coyote--;
         const typing = isTyping();
@@ -424,10 +494,10 @@ window.__ModuleLoader__.load({
         else { player.vx *= player.onGround ? 0.82 : 0.96; if (Math.abs(player.vx) < 0.08) player.vx = 0; }
         player.vy += state.gravity; const MAX_FALL = 12; if (player.vy > MAX_FALL) player.vy = MAX_FALL;
 
-        // xem có nhảy đệm không
         if (player.jumpBuffer > 0 && (player.onGround || player.coyote > 0)) {
           player.vy = state.jump;
           player.onGround = false; player.coyote = 0; player.jumpBuffer = 0;
+          player.jumpStartRot = player.rot;
           spawnParticles(player.x + player.w / 2, player.y + player.h, 8, "#ffd600");
         }
 
@@ -444,13 +514,11 @@ window.__ModuleLoader__.load({
         for (const c of colliders) {
           if (rectsOverlap(player.x, nextY, player.w, player.h, c)) {
             if (vy > 0) {
-              // SNAP: chỉ snap nếu đang rơi và đáy player gần mép trên collider (tolerance 16px) — giúp đáp chính xác mặt dưới
               const bottomBefore = player.y + player.h;
               if (bottomBefore <= c.top + 16) {
-                nextY = c.top - player.h; // snap chính xác
+                nextY = c.top - player.h;
                 landed = true; landX = player.x + player.w / 2; landY = c.top;
               } else {
-                // va chạm hông khi rơi chéo — đẩy ra
                 nextY = c.top - player.h;
                 landed = true; landX = player.x + player.w / 2; landY = c.top;
               }
@@ -462,13 +530,19 @@ window.__ModuleLoader__.load({
           }
         }
         player.y = nextY;
-        if (!player.onGround) player.vy = vy; else if (landed && state.particles && Math.abs(vy) > 1) {
-          // particle khi đáp
+        if (!player.onGround) player.vy = vy; else if (landed && state.particles && Math.abs(vy) > 0.5) {
           spawnParticles(landX, landY, 5, "#fff");
         }
         if (player.y < 0) { player.y = 0; player.vy = 0; }
         if (player.y > window.innerHeight + 200) resetPlayer();
-        if (!player.onGround) player.rot += player.vx * 1.2; else player.rot *= 0.88;
+        // xoay đủ 360° mỗi cú nhảy: 15°/frame khi trên không, snap về bội 360 khi đáp
+        if (!player.onGround) {
+          player.rot += 15;
+        } else {
+          const target = Math.round(player.rot / 360) * 360;
+          player.rot += (target - player.rot) * 0.25;
+          if (Math.abs(target - player.rot) < 0.5) player.rot = target;
+        }
       }
 
       function render() {
@@ -488,10 +562,10 @@ window.__ModuleLoader__.load({
         const k = e.key.toLowerCase(); keys[k] = true;
         if (k === " " || k === "arrowup" || k === "w") {
           if (isTyping()) return;
-          // jump buffer
           player.jumpBuffer = 6;
           if (player.onGround || player.coyote > 0) {
             player.vy = state.jump; player.onGround = false; player.coyote = 0; player.jumpBuffer = 0;
+            player.jumpStartRot = player.rot;
             spawnParticles(player.x + player.w / 2, player.y + player.h, 6, "#ffd600");
           }
           e.preventDefault();
@@ -508,7 +582,6 @@ window.__ModuleLoader__.load({
       }
       function onKeyUp(e) { keys[e.key.toLowerCase()] = false; }
 
-      // init
       window.addEventListener("keydown", onKeyDown);
       window.addEventListener("keyup", onKeyUp);
       let gapStyleEl = document.getElementById("gdash-gap-style");
@@ -516,27 +589,30 @@ window.__ModuleLoader__.load({
 
       const mo = new MutationObserver(() => {
         if (moDebounce) moDebounce();
-        moDebounce = ctx.timeout(() => { moDebounce = null; if (state.gap > 0) applyGap(state.gap); else collectColliders(); }, 180);
+        moDebounce = ctx.timeout(() => { moDebounce = null; if (!state.enabled) return; if (state.gap > 0) applyGap(state.gap); else collectColliders(); }, 180);
       });
       mo.observe(document.body, { childList: true, subtree: true, characterData: true });
       window.addEventListener("resize", collectColliders);
       window.addEventListener("scroll", collectColliders, true);
 
-      // subscribe state -> toggle overlay
       const unsub = subscribe((s) => {
         if (s.enabled && !overlay) createOverlay();
         else if (!s.enabled && overlay) destroyOverlay();
         if (overlay) {
-          if (state.gap !== s.gap) applyGap(s.gap);
           if (hud) {
             const gi = hud.querySelector("#gdash-gap"); if (gi) gi.value = s.gap;
             const gv = hud.querySelector("#gdash-gap-val"); if (gv) gv.textContent = s.gap + "px";
           }
           renderColliders();
+        } else {
+          // khi tắt, đảm bảo gap đã xóa
+          clearGap();
+          collectColliders();
         }
       });
 
       if (state.enabled) createOverlay();
+      else clearGap();
 
       ctx.effect(() => {
         return () => {
