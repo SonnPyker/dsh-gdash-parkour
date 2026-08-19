@@ -19,7 +19,8 @@ window.__ModuleLoader__.load({
       jump: -10.0,
       gravity: 0.82,
       speed: 3.8,
-      paused: false
+      paused: false,
+      randomPlatform: false
     };
 
     function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
@@ -37,6 +38,7 @@ window.__ModuleLoader__.load({
           out.showColliders = !!out.showColliders;
           out.particles = !!out.particles;
           out.paused = !!out.paused;
+          out.randomPlatform = !!out.randomPlatform;
           return out;
         }
       } catch (e) {}
@@ -74,6 +76,9 @@ window.__ModuleLoader__.load({
           showColliders: "Show bounds",
           showCollidersHint: "Hold Alt and drag a bubble to move it",
           particles: "Particles",
+          randomPlatform: "Shuffle into platform level",
+          randomPlatformHint: "Arrange messages into a random platform course with transition",
+          shuffle: "Shuffle",
           jumpTuning: "Jump tuning",
           jumpForce: "Jump force",
           gravity: "Gravity",
@@ -97,6 +102,9 @@ window.__ModuleLoader__.load({
           showColliders: "Hiện khung",
           showCollidersHint: "Giữ Alt và kéo bubble để dời",
           particles: "Hiệu ứng hạt",
+          randomPlatform: "Xếp ngẫu nhiên thành màn chơi",
+          randomPlatformHint: "Tự động xếp tin nhắn thành màn platform ngẫu nhiên, có animation",
+          shuffle: "Xáo trộn lại",
           jumpTuning: "Tinh chỉnh nhảy",
           jumpForce: "Lực nhảy",
           gravity: "Trọng lực",
@@ -229,14 +237,14 @@ window.__ModuleLoader__.load({
                       React.createElement("span", { style: labelStyle }, t("gap")),
                       React.createElement("span", { style: { fontSize: "12.5px", fontWeight: 700, color: "var(--dsw-alias-label-primary, #f5f5f5)", background: "var(--dsw-alias-bg-layer-1, rgba(255,255,255,0.06))", padding: "2px 7px", borderRadius: "999px", border: "1px solid var(--dsw-alias-border-l1, rgba(255,255,255,0.06))" } }, s.gap + "px")
                     ),
-                    React.createElement("input", { className: "gdash-range", type: "range", min: 0, max: 80, value: s.gap, onInput: function(e){ upd({ gap: parseInt(e.target.value, 10) }); }, onChange: function(e){ upd({ gap: parseInt(e.target.value, 10) }); }, style: { width: "100%", accentColor: "var(--dsw-alias-brand-primary, #4f7cff)" } }),
+                    React.createElement("input", { className: "gdash-range", type: "range", min: 0, max: 80, value: s.gap, disabled: !!s.randomPlatform, onInput: function(e){ if(s.randomPlatform) return; upd({ gap: parseInt(e.target.value, 10) }); }, onChange: function(e){ if(s.randomPlatform) return; upd({ gap: parseInt(e.target.value, 10) }); }, style: { width: "100%", accentColor: "var(--dsw-alias-brand-primary, #4f7cff)", opacity: s.randomPlatform ? 0.45 : 1 } }),
                     React.createElement("div", { style: { display: "flex", gap: "6px", marginTop: "10px" } },
-                      React.createElement("button", { onClick: function(){ upd({ gap: 0 }); }, style: Object.assign({}, smallBtn, s.gap===0 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}) }, "0"),
-                      React.createElement("button", { onClick: function(){ upd({ gap: 24 }); }, style: Object.assign({}, smallBtn, s.gap===24 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}) }, "24"),
-                      React.createElement("button", { onClick: function(){ upd({ gap: 48 }); }, style: Object.assign({}, smallBtn, s.gap===48 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}) }, "48"),
-                      React.createElement("button", { onClick: function(){ upd({ gap: 64 }); }, style: Object.assign({}, smallBtn, s.gap===64 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}) }, "64")
+                      React.createElement("button", { onClick: function(){ if(s.randomPlatform) return; upd({ gap: 0 }); }, disabled: !!s.randomPlatform, style: Object.assign({}, smallBtn, s.gap===0 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}, s.randomPlatform ? { opacity: 0.45, cursor: "not-allowed" } : {}) }, "0"),
+                      React.createElement("button", { onClick: function(){ if(s.randomPlatform) return; upd({ gap: 24 }); }, disabled: !!s.randomPlatform, style: Object.assign({}, smallBtn, s.gap===24 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}, s.randomPlatform ? { opacity: 0.45, cursor: "not-allowed" } : {}) }, "24"),
+                      React.createElement("button", { onClick: function(){ if(s.randomPlatform) return; upd({ gap: 48 }); }, disabled: !!s.randomPlatform, style: Object.assign({}, smallBtn, s.gap===48 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}, s.randomPlatform ? { opacity: 0.45, cursor: "not-allowed" } : {}) }, "48"),
+                      React.createElement("button", { onClick: function(){ if(s.randomPlatform) return; upd({ gap: 64 }); }, disabled: !!s.randomPlatform, style: Object.assign({}, smallBtn, s.gap===64 ? { background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", borderColor: "transparent", fontWeight: 600 } : {}, s.randomPlatform ? { opacity: 0.45, cursor: "not-allowed" } : {}) }, "64")
                     ),
-                    React.createElement("div", { style: hintStyle }, t("gapHint"))
+                    React.createElement("div", { style: hintStyle }, s.randomPlatform ? "⚠️ " + t("randomPlatformHint") + " — gap tạm tắt" : t("gapHint"))
                   ),
                   // toggles
                   React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "10px" } },
@@ -250,7 +258,18 @@ window.__ModuleLoader__.load({
                     React.createElement("label", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", cursor: "pointer", padding: "8px 10px", borderRadius: "8px", background: "var(--dsw-alias-bg-layer-3, #232326)", border: "1px solid var(--dsw-alias-border-l1, rgba(255,255,255,0.06))" } },
                       React.createElement("span", { style: { fontSize: "12.5px", fontWeight: 500, color: "var(--dsw-alias-label-primary, #f5f5f5)" } }, t("particles")),
                       React.createElement(Toggle, { checked: s.particles, onChange: function(v){ upd({ particles: v }); } })
-                    )
+                    ),
+                    React.createElement("label", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", cursor: "pointer", padding: "8px 10px", borderRadius: "8px", background: s.randomPlatform ? "var(--dsw-alias-bg-layer-1, #232326)" : "var(--dsw-alias-bg-layer-3, #232326)", border: "1px solid " + (s.randomPlatform ? "var(--dsw-alias-brand-primary, #4f7cff)" : "var(--dsw-alias-border-l1, rgba(255,255,255,0.06))") } },
+                      React.createElement("span", { style: { display: "flex", flexDirection: "column", gap: "2px" } },
+                        React.createElement("span", { style: { fontSize: "12.5px", fontWeight: 500, color: s.randomPlatform ? "var(--dsw-alias-brand-primary, #4f7cff)" : "var(--dsw-alias-label-primary, #f5f5f5)" } }, t("randomPlatform")),
+                        React.createElement("span", { style: { fontSize: "11px", color: "var(--dsw-alias-label-tertiary, #8a8a8a)", lineHeight: "1.3" } }, t("randomPlatformHint"))
+                      ),
+                      React.createElement(Toggle, { checked: s.randomPlatform, onChange: function(v){
+                        upd({ randomPlatform: v });
+                        if (v) { try{ window.dispatchEvent(new CustomEvent("gdash-random-enter")); }catch(e){} } else { try{ window.dispatchEvent(new CustomEvent("gdash-random-exit")); }catch(e){} }
+                      } })
+                    ),
+                    s.randomPlatform ? React.createElement("button", { onClick: function(){ try{ window.dispatchEvent(new CustomEvent("gdash-random-shuffle")); }catch(e){} }, style: Object.assign({}, { padding: "7px 10px", borderRadius: "8px", border: "1px solid var(--dsw-alias-border-l2, rgba(255,255,255,0.12))", background: "var(--dsw-alias-label-primary, #f5f5f5)", color: "var(--dsw-alias-bg-layer-3, #1a1a1a)", fontSize: "12px", fontWeight: 600, cursor: "pointer", width: "100%" }) }, "🎲 " + t("shuffle")) : null
                   ),
                   // tuning
                   React.createElement("div", { style: Object.assign({}, sectionStyle, { padding: 0, overflow: "hidden" }) },
@@ -299,6 +318,100 @@ window.__ModuleLoader__.load({
       let pendingGapCollect = null, moDebounce = null;
       let draggedEl = null, dragStart = { x: 0, y: 0 }, dragOrig = { x: 0, y: 0 }, isDragging = false;
       let playerDragging = false, playerDragOff = { x: 0, y: 0 };
+      let randomTransitioning = false;
+
+      function getChatElementsForRandom(){
+        const root = getChatRoot();
+        let cands; try { cands = root.querySelectorAll("div, article, section, li, p"); } catch(e){ cands = []; }
+        const out = [];
+        for (const el of cands){
+          if (el.closest("#gdash-overlay")) continue;
+          if (el.id === "gdash-gap-style" || el.id === "gdash-parkour-global") continue;
+          try {
+            const cs = getComputedStyle(el);
+            if (cs.display === "none" || cs.visibility === "hidden" || cs.opacity === "0") continue;
+            const r = el.getBoundingClientRect();
+            if (r.width < 14 || r.height < 12) continue;
+            if (r.right < LEFT_CUTOFF) continue;
+            if (!isChatText(el, r, cs) && !isChatOrFloating(el, r, cs)) continue;
+            out.push(el);
+          } catch(e){}
+        }
+        // keep only outermost (remove descendants of already kept)
+        return out.filter(function(el, i, arr){ return !arr.some(function(a){ return a !== el && a.contains(el); }); });
+      }
+      function arrangeRandomPlatforms(shouldShuffle){
+        const elems = getChatElementsForRandom();
+        if (elems.length === 0) return;
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const startX = LEFT_CUTOFF + 24;
+        const availW = Math.max(200, vw - startX - 24);
+        // if gap active, temporarily clear it for clean platform calc
+        // store current gap margins but set to 0 for layout calc
+        const cols = Math.max(3, Math.min(6, Math.floor(availW / 165)));
+        const gapX = Math.floor(availW / cols);
+        const baseY = vh * 0.62;
+        const stepY = 88;
+        let ordered = elems.slice();
+        if (shouldShuffle) ordered.sort(function(){ return Math.random() - 0.5; });
+        ordered.forEach(function(el){
+          if (!originalTransforms.has(el)) originalTransforms.set(el, el.style.transform || "");
+          if (!el.dataset.gdashOrigTransition) el.dataset.gdashOrigTransition = el.style.transition || "";
+        });
+        randomTransitioning = true;
+        ordered.forEach(function(el, idx){
+          const col = idx % cols;
+          const row = Math.floor(idx / cols);
+          const jitterX = (Math.random()*26 - 13);
+          const jitterY = (Math.random()*18 - 9);
+          const targetLeft = startX + col * gapX + jitterX + 10;
+          const rowWobble = (cols - col) * 5;
+          const targetTop = baseY - row * stepY - rowWobble + jitterY;
+          const r = el.getBoundingClientRect();
+          const dx = targetLeft - r.left;
+          const dy = targetTop - r.top;
+          const origTr = originalTransforms.get(el) || "";
+          const m = origTr.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+          const ox = m ? parseFloat(m[1]) : 0;
+          const oy = m ? parseFloat(m[2]) : 0;
+          const newX = ox + dx;
+          const newY = oy + dy;
+          el.style.transition = "transform 0.72s cubic-bezier(0.22,1,0.36,1)";
+          el.style.transitionDelay = (col * 26 + row * 20) + "ms";
+          el.style.marginBottom = "0px";
+          el.style.transform = "translate(" + newX + "px, " + newY + "px)";
+        });
+        ctx.timeout(function(){
+          randomTransitioning = false;
+          ordered.forEach(function(el){ el.style.transitionDelay = ""; });
+          collectColliders();
+          if (state.particles){
+            ordered.slice(0, Math.min(ordered.length, 12)).forEach(function(el){
+              const rr = el.getBoundingClientRect();
+              spawnParticles(rr.left + rr.width * 0.5, rr.top - 2, 3, "#ffd600");
+              if (Math.random() < 0.5) spawnParticles(rr.left + 12, rr.top + rr.height*0.5, 2, "#4f7cff");
+            });
+          }
+        }, 900);
+      }
+      function restoreRandomPlatforms(){
+        const elems = getChatElementsForRandom();
+        elems.forEach(function(el){
+          const orig = originalTransforms.get(el);
+          el.style.transition = "transform 0.58s cubic-bezier(0.22,1,0.36,1)";
+          el.style.transform = orig || "";
+          if (originalMargins.has(el)) el.style.marginBottom = originalMargins.get(el);
+          else el.style.marginBottom = "";
+          el.style.transitionDelay = "";
+        });
+        ctx.timeout(function(){
+          elems.forEach(function(el){
+            el.style.transition = el.dataset.gdashOrigTransition || "";
+            try{ delete el.dataset.gdashOrigTransition; }catch(e){ el.dataset.gdashOrigTransition = ""; }
+          });
+          if (state.gap > 0) applyGap(state.gap); else collectColliders();
+        }, 640);
+      }
 
       const player = { x: 320, y: 120, vx: 0, vy: 0, w: 22, h: 22, onGround: false, rot: 0, coyote: 0, jumpBuffer: 0, jumpStartRot: 0 };
       const keys = {};
@@ -340,16 +453,23 @@ window.__ModuleLoader__.load({
         if (isInLeftTab(el, rect)) return false;
         if (isBackgroundExcluded(el, rect, cs)) return false;
         if (rect.left < LEFT_CUTOFF) return false;
+        if (isComposerOrHeader(el)) return false;
         const text = (el.innerText || "").trim();
-        if (text.length < 8 || text.length > 3200) return false;
-        if (el.children.length > 4) return false;
-        if (rect.width < 180 || rect.width > 900) return false;
-        if (rect.height < 20 || rect.height > 140) return false;
+        // strong signal: DSH bubble / markdown containers — be permissive
+        let cls = ""; try { cls = (el.className && typeof el.className === "string") ? el.className : ""; } catch(e){}
+        let isBubbleish = false; try { if (el.matches && el.matches('[class*="bubble"], [class*="Markdown"], [class*="markdown"], [class*="userStack"], [class*="userRow"]')) isBubbleish = true; } catch(e){}
+        if (cls.includes("bubble") || cls.includes("Markdown") || cls.includes("markdown")) isBubbleish = true;
+        if (isBubbleish) {
+          if (text.length >= 1 && text.length <= 6000 && rect.width >= 80 && rect.width <= 1100 && rect.height >= 14 && rect.height <= 520) return true;
+        }
+        if (text.length < 2 || text.length > 5000) return false;
+        if (el.children.length > 10) return false;
+        if (rect.width < 80 || rect.width > 980) return false;
+        if (rect.height < 14 || rect.height > 260) return false;
         const inChatArea = el.closest('main, [role="main"], [class*="conversation"], [class*="chat"], [data-testid*="conversation"]') !== null;
         if (!inChatArea) {
-          if (rect.left < LEFT_CUTOFF + 40) return false;
+          if (rect.left < LEFT_CUTOFF + 30) return false;
         }
-        if (isComposerOrHeader(el)) return false;
         return true;
       }
       function isChatOrFloating(el, rect, cs) {
@@ -401,7 +521,9 @@ window.__ModuleLoader__.load({
         const root = getChatRoot();
         let candidates;
         try { candidates = root.querySelectorAll("div, article, section, li, p"); } catch (e) { candidates = document.body.querySelectorAll("div, article, section, li, p"); }
+        const seen = new Set();
         for (const el of candidates) {
+          if (seen.has(el)) continue;
           if (el.closest("#gdash-overlay")) continue;
           if (el.id === "gdash-gap-style" || el.id === "gdash-parkour-global") continue;
           let cs; try { cs = getComputedStyle(el); } catch (e) { continue; }
@@ -411,6 +533,12 @@ window.__ModuleLoader__.load({
           if (r.right < LEFT_CUTOFF || r.left > vw || r.bottom < 0 || r.top > vh) continue;
           if (r.width > vw * 0.97 && r.height > vh * 0.86) continue;
           if (!isChatOrFloating(el, r, cs)) continue;
+          // dedup: if any already-added collider is an ancestor of this el, skip child (keep parent platform)
+          let isDescendant = false;
+          for (const c of colliders) { if (c.el && c.el !== el && c.el.contains(el)) { isDescendant = true; break; } }
+          if (isDescendant) continue;
+          // if this el is ancestor of existing colliders, remove those descendants
+          colliders = colliders.filter(function(c){ return !(c.el && el.contains(c.el)); });
           const isFloating = cs.position === "fixed" || cs.position === "absolute";
           const insetX = isFloating ? 1 : 4;
           const insetY = isFloating ? 2 : 4;
@@ -422,6 +550,7 @@ window.__ModuleLoader__.load({
             el: el,
             raw: { left: r.left, top: r.top, right: r.right, bottom: r.bottom }
           });
+          seen.add(el);
         }
         colliders.push({ left: LEFT_CUTOFF - 20, top: vh - 4, right: vw + 100, bottom: vh + 100, el: null });
         colliders.push({ left: LEFT_CUTOFF - 20, top: -100, right: LEFT_CUTOFF, bottom: vh + 100, el: null });
@@ -450,6 +579,7 @@ window.__ModuleLoader__.load({
 
       function applyGap(newGap) {
         if (!state.enabled) { clearGap(); return; }
+        if (state.randomPlatform) return; // random mode owns layout
         state.gap = clamp(newGap, 0, 80);
         const gapStyle = document.getElementById("gdash-gap-style");
         if (gapStyle) gapStyle.textContent = "";
@@ -611,6 +741,7 @@ window.__ModuleLoader__.load({
       function updatePhysics() {
         const paused = state.paused;
         if (paused || playerDragging || isDragging) return;
+        const wasOnGround = player.onGround;
         if (player.jumpBuffer > 0) player.jumpBuffer--;
         if (player.onGround) player.coyote = 6; else if (player.coyote > 0) player.coyote--;
         const typing = isTyping();
@@ -664,7 +795,7 @@ window.__ModuleLoader__.load({
         }
         player.y = nextY;
         if (!player.onGround) player.vy = vy; else player.vy = 0;
-        if (landed && state.particles) {
+        if (landed && !wasOnGround && state.particles) {
           spawnParticles(landX, landY, 4, "rgba(255,255,255,0.92)");
         }
         if (player.y < 0) { player.y = 0; player.vy = 0; }
@@ -717,9 +848,15 @@ window.__ModuleLoader__.load({
       window.addEventListener("keyup", onKeyUp);
       window.addEventListener("blur", onBlur);
       document.addEventListener("visibilitychange", onVisibility);
+      function onRandomEnter(){ arrangeRandomPlatforms(false); }
+      function onRandomExit(){ restoreRandomPlatforms(); }
+      function onRandomShuffle(){ if (state.randomPlatform) arrangeRandomPlatforms(true); }
       window.addEventListener("mousedown", onAltDragStart);
       window.addEventListener("gdash-reset", resetPlayer);
       window.addEventListener("gdash-rescan", collectColliders);
+      window.addEventListener("gdash-random-enter", onRandomEnter);
+      window.addEventListener("gdash-random-exit", onRandomExit);
+      window.addEventListener("gdash-random-shuffle", onRandomShuffle);
 
       let gapStyleEl = document.getElementById("gdash-gap-style");
       if (!gapStyleEl) { gapStyleEl = document.createElement("style"); gapStyleEl.id = "gdash-gap-style"; document.head.appendChild(gapStyleEl); }
@@ -739,7 +876,10 @@ window.__ModuleLoader__.load({
         if (overlay) renderColliders(); else clearGap();
       });
 
-      if (state.enabled) createOverlay(); else clearGap();
+      if (state.enabled) {
+        createOverlay();
+        if (state.randomPlatform) ctx.timeout(function(){ arrangeRandomPlatforms(false); }, 500);
+      } else clearGap();
 
       ctx.effect(function(){
         return function(){
@@ -753,6 +893,9 @@ window.__ModuleLoader__.load({
           window.removeEventListener("mousedown", onAltDragStart);
           window.removeEventListener("gdash-reset", resetPlayer);
           window.removeEventListener("gdash-rescan", collectColliders);
+          try{ window.removeEventListener("gdash-random-enter", onRandomEnter); }catch(e){}
+          try{ window.removeEventListener("gdash-random-exit", onRandomExit); }catch(e){}
+          try{ window.removeEventListener("gdash-random-shuffle", onRandomShuffle); }catch(e){}
           window.removeEventListener("resize", collectColliders);
           window.removeEventListener("scroll", collectColliders, true);
           document.removeEventListener("mousemove", onDragMove);
