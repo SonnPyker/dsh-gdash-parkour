@@ -337,8 +337,8 @@ window.__ModuleLoader__.load({
             out.push(el);
           } catch(e){}
         }
-        // keep only outermost (remove descendants of already kept)
-        return out.filter(function(el, i, arr){ return !arr.some(function(a){ return a !== el && a.contains(el); }); });
+        // keep leaves only — each bubble, not containers
+        return out.filter(function(el){ return !out.some(function(a){ return a !== el && el.contains(a); }); });
       }
       function arrangeRandomPlatforms(shouldShuffle){
         const elems = getChatElementsForRandom();
@@ -460,12 +460,12 @@ window.__ModuleLoader__.load({
         let isBubbleish = false; try { if (el.matches && el.matches('[class*="bubble"], [class*="Markdown"], [class*="markdown"], [class*="userStack"], [class*="userRow"]')) isBubbleish = true; } catch(e){}
         if (cls.includes("bubble") || cls.includes("Markdown") || cls.includes("markdown")) isBubbleish = true;
         if (isBubbleish) {
-          if (text.length >= 1 && text.length <= 6000 && rect.width >= 80 && rect.width <= 1100 && rect.height >= 14 && rect.height <= 520) return true;
+          if (text.length >= 1 && text.length <= 8000 && rect.width >= 80 && rect.width <= 1100 && rect.height >= 14 && rect.height <= 800) return true;
         }
-        if (text.length < 2 || text.length > 5000) return false;
-        if (el.children.length > 10) return false;
+        if (text.length < 2 || text.length > 8000) return false;
+        if (el.children.length > 22) return false;
         if (rect.width < 80 || rect.width > 980) return false;
-        if (rect.height < 14 || rect.height > 260) return false;
+        if (rect.height < 14 || rect.height > 800) return false;
         const inChatArea = el.closest('main, [role="main"], [class*="conversation"], [class*="chat"], [data-testid*="conversation"]') !== null;
         if (!inChatArea) {
           if (rect.left < LEFT_CUTOFF + 30) return false;
@@ -533,12 +533,21 @@ window.__ModuleLoader__.load({
           if (r.right < LEFT_CUTOFF || r.left > vw || r.bottom < 0 || r.top > vh) continue;
           if (r.width > vw * 0.97 && r.height > vh * 0.86) continue;
           if (!isChatOrFloating(el, r, cs)) continue;
-          // dedup: if any already-added collider is an ancestor of this el, skip child (keep parent platform)
-          let isDescendant = false;
-          for (const c of colliders) { if (c.el && c.el !== el && c.el.contains(el)) { isDescendant = true; break; } }
-          if (isDescendant) continue;
-          // if this el is ancestor of existing colliders, remove those descendants
-          colliders = colliders.filter(function(c){ return !(c.el && el.contains(c.el)); });
+          // keep leaves only: prefer smallest bubble, not giant containers
+          let shouldSkip = false;
+          for (let i = colliders.length - 1; i >= 0; i--) {
+            const c = colliders[i];
+            if (!c.el) continue;
+            if (c.el.contains(el)) {
+              // existing is ancestor -> remove ancestor, keep leaf
+              colliders.splice(i, 1);
+            } else if (el.contains(c.el)) {
+              // new is ancestor of existing leaf -> skip new
+              shouldSkip = true;
+              break;
+            }
+          }
+          if (shouldSkip) continue;
           const isFloating = cs.position === "fixed" || cs.position === "absolute";
           const insetX = isFloating ? 1 : 4;
           const insetY = isFloating ? 2 : 4;
