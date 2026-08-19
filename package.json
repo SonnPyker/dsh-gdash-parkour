@@ -1,6 +1,6 @@
 {
   "name": "dsh-gdash-parkour",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Geometry Dash Parkour for DSH — điều khiển ô vuông nhảy trên các dòng chat, collider từ UI, giãn dòng + kéo box + particles",
   "type": "module",
   "main": "lib/index.js",
