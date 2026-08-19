@@ -114,11 +114,11 @@ window.__ModuleLoader__.load({
       if (localeSvc) ctx.effect(function(){ return localeSvc.register(NS, dicts); }, "gdash-parkour: locale");
       const t = (function(){ try { return (localeSvc && localeSvc.bind(NS)) || function(k){ return (dicts.vi[k] || dicts.en[k] || k); }; } catch(e){ return function(k){ return (dicts.vi[k] || dicts.en[k] || k); }; } })();
 
-      // ——— Settings card — DSW design system ———
+      // ——— Settings page — DSW design system (own left-nav section, like original) ———
       const slots = ctx.get("slots");
       if (slots) {
-        slots.inject("settings.plugin.item", function(){ return slots.register(
-          { name: "settings.plugin.item", key: "gdash-parkour" },
+        slots.inject("settings.section", function(){ return slots.register(
+          { name: "settings.section", id: "gdash-parkour", label: function(){ return t("title"); }, order: 20 },
           function(){
             function Toggle(props){
               const checked = !!props.checked;

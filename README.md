@@ -3,18 +3,20 @@
 > Biến DeepSeek Harness thành Geometry Dash — nhảy ô vàng trên chính dòng chat của bạn.
 > *Turn your chat into a Geometry Dash level — English & Tiếng Việt supported.*
 
-<div align="right">
+
 
 [English](README.en.md) | **Tiếng Việt**
 
-</div>
 
-[![npm version](https://img.shields.io/npm/v/dsh-gdash-parkour?color=ffd600)](https://www.npmjs.com/package/dsh-gdash-parkour)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![DSH Plugin](https://img.shields.io/badge/DSH-Plugin-blue)](https://github.com/deepseek-ai/deepseek-harness)
-[![i18n](https://img.shields.io/badge/i18n-en%20%7C%20vi-green)](https://github.com/<you>/dsh-gdash-parkour)
+
+[npm version](https://www.npmjs.com/package/dsh-gdash-parkour)
+[License: MIT](LICENSE)
+[DSH Plugin](https://github.com/deepseek-ai/deepseek-harness)
+[i18n](https://github.com/<you>/dsh-gdash-parkour)
 
 ---
+
+
 
 ### Chơi ngay trên chat
 
@@ -24,21 +26,24 @@ Bạn chat như bình thường — mỗi dòng chat, mỗi bubble, mỗi panel 
 
 > **Ngôn ngữ / Language:** Plugin tự theo ngôn ngữ DSH của bạn (Settings → Language). Hỗ trợ **Tiếng Việt** và **English** đầy đủ — card trong `Plugins` cũng dịch tự động.
 
-![demo](https://via.placeholder.com/800x400?text=GDash+Parkour+Demo)
+demo
 
 ---
+
+
 
 ## Cài đặt — 1 lệnh
 
 Mở terminal và chạy:
 
 ```bash
-dsh plugin --profile web add dsh-gdash-parkour
+dsh plugin --profile web add dsh-gdash-parkour@latest
 ```
 
 Xong restart DSH (`dsh web` lại), mở `http://127.0.0.1:3080`.
 
 > Chưa publish lên npm? Dùng GitHub:
+>
 > ```bash
 > dsh plugin --profile web add github:<you>/dsh-gdash-parkour
 > ```
@@ -51,6 +56,8 @@ dsh plugin --profile web remove dsh-gdash-parkour
 
 ---
 
+
+
 ## Bật và chơi
 
 1. Vào **Settings → Plugins → Plugin Configuration** → tìm card **GDash Parkour** → gạt **Bật**.
@@ -59,21 +66,27 @@ dsh plugin --profile web remove dsh-gdash-parkour
 
 ---
 
+
+
 ## Điều khiển
 
-| Phím | Làm gì |
-|------|--------|
-| **A / D** hoặc **← / →** | Di chuyển trái / phải |
-| **Shift** (giữ) | Chạy nhanh |
-| **Space / W / ↑** | Nhảy — xoay đủ 1 vòng 360° |
-| **P** | Pause / Resume |
-| **Kéo viền đỏ** | Dời block chat khi kẹt |
-| **Kéo ô vàng** | Dời nhân vật khi kẹt |
-| `⟳` / `↺` trong HUD | Quét lại sàn / Reset vị trí |
+
+| Phím                     | Làm gì                      |
+| ------------------------ | --------------------------- |
+| **A / D** hoặc **← / →** | Di chuyển trái / phải       |
+| **Shift** (giữ)          | Chạy nhanh                  |
+| **Space / W / ↑**        | Nhảy — xoay đủ 1 vòng 360°  |
+| **P**                    | Pause / Resume              |
+| **Kéo viền đỏ**          | Dời block chat khi kẹt      |
+| **Kéo ô vàng**           | Dời nhân vật khi kẹt        |
+| `⟳` / `↺` trong HUD      | Quét lại sàn / Reset vị trí |
+
 
 > Đang gõ trong ô chat thì phím game tự nhường — không sợ nhảy lung tung.
 
 ---
+
+
 
 ## Tùy chỉnh trong Settings
 
@@ -88,6 +101,8 @@ Mọi tùy chỉnh lưu tự động.
 
 ---
 
+
+
 ## Mẹo
 
 - Dòng chat mặc định hơi dính nhau — **kéo giãn lên 32-40px** là dễ nhảy nhất.
@@ -96,6 +111,8 @@ Mọi tùy chỉnh lưu tự động.
 - Nhảy hụt? Nhảy thấp mặc định đã snap chính xác đáy — chỉ cần chạm mép trên là dính.
 
 ---
+
+
 
 ## FAQ
 
@@ -109,14 +126,15 @@ Mọi tùy chỉnh lưu tự động.
 
 ---
 
+
+
 ## Giấy phép
 
 MIT — dùng thoải mái. [LICENSE](LICENSE)
 
 ---
 
-<details>
-<summary>Cho developer — cấu trúc & publish</summary>
+Cho developer — cấu trúc & publish
 
 ```
 gdash-parkour/
@@ -139,4 +157,3 @@ dsh plugin --profile web update dsh-gdash-parkour
 
 PR welcome!
 
-</details>
