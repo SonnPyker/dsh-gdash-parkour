@@ -1,4 +1,4 @@
-# dsh-gdash-parkour — v1.4.0
+# dsh-gdash-parkour — v1.3.0
 
 > Biến DeepSeek Harness thành **Geometry Dash** — ô vàng nhảy trên chính bubble chat của bạn, giờ có cả **enemy, coin, power-up, màn random và highscore**.
 > *Turn your chat into a Geometry Dash level — now with enemies, coins, star power-ups and a shuffled platform course.*
@@ -29,7 +29,7 @@ Bạn chat như bình thường — mỗi **bubble / markdown / panel nổi** b�
 
 ---
 
-## Tính năng v1.4.0
+## Tính năng v1.3.0
 
 - **Platform từ chat thật** — phát hiện `bubble / Markdown / userStack` bằng `getBoundingClientRect()`, giữ **leaves** (bỏ container cha), inset `4px` để có khe hở, loại `left<285px / header / composer`.
 - **Vật lý chuẩn** — trọng lực `0.82`, nhảy `-10`, `coyote 6f`, `jumpBuffer 6f`, sub-step `vy/8`, tìm **sàn gần nhất** theo hướng rơi (chống teleport xuyên sàn), xoay `15°/frame` đủ 360°.
@@ -162,7 +162,7 @@ Mọi thay đổi `emit() → saveState()` ngay.
 
 ```
 gdash-parkour/
-  package.json       # dsh.bundle.patch + dsh.client | version 1.4.0
+  package.json       # dsh.bundle.patch + dsh.client | version 1.3.0
   cordis.patch.yml   # - insert: {id: gdash-parkour}
   client/client.js   # game + Settings.section (window.__ModuleLoader__)
   lib/index.js       # host stub (no-op)
@@ -171,22 +171,12 @@ gdash-parkour/
   src/client.ts      # tham khảo, build ra lib/client.js
 ```
 
-```bash
-# dev không cài — load thẳng workspace
-dsh --patch ./gdash-parkour/patch.dev.yml
-# hoặc dsh web với --patch flag
-
-# publish
-npm version patch # 1.4.0 → 1.4.1
-npm publish
-dsh plugin --profile web update dsh-gdash-parkour
-```
 
 **Lưu trữ:** `localStorage` key `gdash-parkour:state` chứa `{enabled,gap,showColliders,particles,jump,gravity,speed,paused,randomPlatform,enemyCount,enemySpeed,coinCount,powerupEnabled,powerupRate,highscore}`. `score` là session, reset khi `destroyOverlay()`.
 
 **Changelog**
-- **v1.4.0** — Hold W nhảy, chặn input khi gõ, fix teleport (nearest wall/platform), leaf dedup + nới filter, enemy/coin/power-up + highscore + HUD, Random Platform với stagger animation, UI DSW chia khu vực.
-- **v1.3.0** — DSW UI, `settings.section` riêng, gap pulse, particle, inset collider `4px`.
+- **v1.3.0** — Hold W nhảy, chặn input khi gõ, fix teleport (nearest wall/platform), leaf dedup + nới filter, enemy/coin/power-up + highscore + HUD, Random Platform với stagger animation, UI DSW chia khu vực.
+- **v1.2.x** — DSW UI, `settings.section` riêng, gap pulse, particle, inset collider `4px`.
 - **v1.2.x** — Alt+drag bubble, coyote/jumpBuffer, left-cutoff `285px`.
 - **v1.1.0** — Xoay `15°/frame` đủ 360°.
 
