@@ -1,4 +1,4 @@
-# dsh-gdash-parkour — v1.4.0
+# dsh-gdash-parkour — v1.3.0
 
 > Turn **DeepSeek Harness** into **Geometry Dash** — the yellow square now jumps with **enemies, coins, star power-ups, shuffled courses and a high-score**.
 > *Biến DeepSeek Harness thành Geometry Dash — giờ có cả enemy, coin, sao xanh và màn random.*
@@ -29,7 +29,7 @@ Chat as usual — every **bubble / markdown / floating panel** becomes a **platf
 
 ---
 
-## Features v1.4.0
+## Features v1.3.0
 
 - **Platforms from real chat** — `getBoundingClientRect()` + leaf dedup (drops containers, keeps bubbles), inset `4px` gap, excludes `left<285px / header / composer`.
 - **Tuned physics** — gravity `0.82`, jump `-10`, `coyote 6f`, `jumpBuffer 6f`, sub-step `vy/8`, **nearest-wall/platform** search (no teleport through floors), `15°/frame` spin.
@@ -160,7 +160,7 @@ All auto-save to `localStorage gdash-parkour:state`:
 
 ```
 gdash-parkour/
-  package.json       # dsh.bundle.patch + dsh.client | version 1.4.0
+  package.json       # dsh.bundle.patch + dsh.client | version 1.3.0
   cordis.patch.yml   # - insert: {id: gdash-parkour}
   client/client.js   # game + Settings.section (window.__ModuleLoader__)
   lib/index.js       # host stub
@@ -169,21 +169,12 @@ gdash-parkour/
   src/client.ts      # ref, build to lib/client.js
 ```
 
-```bash
-# dev without install
-dsh --patch ./gdash-parkour/patch.dev.yml
-
-# publish
-npm version patch # 1.4.0 → 1.4.1
-npm publish
-dsh plugin --profile web update dsh-gdash-parkour
-```
 
 **Storage:** `localStorage` key `gdash-parkour:state` holds `{enabled,gap,showColliders,particles,jump,gravity,speed,paused,randomPlatform,enemyCount,enemySpeed,coinCount,powerupEnabled,powerupRate,highscore}`. `score` is session only.
 
 **Changelog**
 - **v1.4.0** — Hold W jump, typing guard, nearest-platform teleport fix, leaf dedup, enemies/coins/star + highscore + HUD, shuffled course with stagger, DSW sectioned UI.
-- **v1.3.0** — DSW UI, own `settings.section`, gap pulse, inset `4px`.
+- **v1.2.x** — DSW UI, own `settings.section`, gap pulse, inset `4px`.
 - **v1.2.x** — Alt+drag bubble, coyote/jumpBuffer, `left 285px` cutoff.
 - **v1.1.0** — `15°/frame` 360° spin.
 
